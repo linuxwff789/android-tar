@@ -1,23 +1,17 @@
 name: Build GNU tar for Android
-
-on:
-  workflow_dispatch:
-
+on: workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Install deps
         run: sudo apt-get update && sudo apt-get install -y autoconf automake autopoint texinfo gettext
-
       - name: Setup NDK
         run: |
           curl -sL https://dl.google.com/android/repository/android-ndk-r27b-linux.zip -o ndk.zip
           unzip -q ndk.zip
           echo "NDK_DIR=$(pwd)/android-ndk-r27b" >> $GITHUB_ENV
-
       - name: Build tar
         run: |
           curl -sL https://ftp.gnu.org/gnu/tar/tar-1.35.tar.gz | tar xz
@@ -27,26 +21,16 @@ jobs:
           TARGET=aarch64-linux-android
           API=21
           export PATH=$TOOLCHAIN/bin:$PATH
-
-          ./configure \
-            --host=$TARGET \
-            --prefix=/tmp/tar-install \
-            CC=${TARGET}${API}-clang \
-            --disable-nls \
-            --disable-largefile \
-            gl_cv_func_getwd_without_getcwd=yes \
-            ac_cv_func_malloc_0_nonnull=yes \
-            ac_cv_func_realloc_0_nonnull=yes
-
-          make -j$(nproc)
+          sed -i 's/mktime_z/mktime_z_NA/g' gnu/nstrftime.c
+          ./configure --host=$TARGET --prefix=/tmp/tar-install CC=${TARGET}${API}-clang --disable-nls --disable-largefile --disable-rmt gl_cv_func_getwd_without_getcwd=yes ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
+          make -j$(nproc) CFLAGS="-Wno-error=implicit-function-declaration"
           make install
           file /tmp/tar-install/bin/tar
-
       - name: Upload release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.35
-          name: "GNU tar 1.35 arm64-v8a"
+          name: GNU tar 1.35 arm64-v8a
           files: /tmp/tar-install/bin/tar
           make_latest: true
           overwrite: true
