@@ -2,6 +2,8 @@ name: Build GNU tar for Android
 
 "on":
   workflow_dispatch:
+  push:
+    branches: [main]
 
 jobs:
   build:
@@ -29,7 +31,6 @@ jobs:
           TARGET=aarch64-linux-android
           API=21
           export PATH=$TOOLCHAIN/bin:$PATH
-          # Patch all mktime_z references (not in Bionic)
           grep -rl "mktime_z" . --include="*.c" --include="*.h" | xargs sed -i 's/mktime_z/mktime_z_NA/g'
           ./configure --host=$TARGET --prefix=/tmp/tar-install CC=${TARGET}${API}-clang --disable-nls --disable-largefile --disable-rmt --disable-logging gl_cv_func_getwd_without_getcwd=yes ac_cv_func_malloc_0_nonnull=yes ac_cv_func_realloc_0_nonnull=yes
           make -j$(nproc) CFLAGS="-Wno-error=implicit-function-declaration -Wno-error=int-conversion"
