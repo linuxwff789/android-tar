@@ -1,2 +1,2 @@
 # android-tar
-GNU tar 1.35 for Android
+GNU tar 1.35
