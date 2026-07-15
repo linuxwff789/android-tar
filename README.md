@@ -1,2 +1,3 @@
-# Android GNU tar v2
-Cross-compiled for arm64-v8a
+# android-tar
+GNU tar 1.35 for Android arm64-v8a
+Build via NDK r27b on GitHub Actions
